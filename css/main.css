@@ -83,7 +83,7 @@ body {
   position: relative;
   margin-top: 57px;
   width: 540px;
-  height: 260px;
+  /* height: 260px; */
   padding: 21px 40px 38px;
 
   border-radius: 8px;
@@ -93,6 +93,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  text-align: left;
 
   font-size: 22px;
 }
@@ -114,19 +115,21 @@ body {
 
 .card-city {
   font-weight: 500;
+  font-size: 30px;
 }
 
 .card-city span {
   display: inline-block;
-  width: 75px;
-  height: 35px;
+  vertical-align: text-top;
+  /* width: 75px; */
+  /* height: 35px; */
   padding: 5px 22px;
   margin-left: 12px;
 
-  border-radius: 6px;
+  border-radius: 20px;
   background-color: #c09b16;
 
-  font-size: 22px;
+  font-size: 16px;
   color: #fff;
   text-transform: uppercase;
 }
