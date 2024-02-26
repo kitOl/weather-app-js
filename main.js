@@ -1,57 +1,100 @@
+import conditions from "./conditions.js";
+
 const apiKey = "50f3877d4083433885f232549242402";
 
 const header = document.querySelector(".header");
 const form = document.querySelector("#form");
 const input = document.querySelector("#inputCity");
 
-form.onsubmit = function (e) {
+function clearInput() {
+  input.value = "";
+}
+
+function removeCard() {
+  const prevCard = document.querySelector(".card");
+
+  if (prevCard) {
+    prevCard.remove();
+  }
+}
+
+function showCard(html) {
+  header.insertAdjacentHTML("afterend", html);
+}
+
+function showError(error) {
+  const html = `<div class="card">${error}</div>`;
+  showCard(html);
+}
+
+function showWeatherCard({ location, country, temp, condition, imgPathLocal }) {
+  const html = `<div class="card">
+  <h2 class="card-city">${location} <span>${country}</span></h2>
+  <div class="card-weather">
+    <div class="card-value">${temp}<sup>°c</sup></div>
+    <!--  +11&#8451; -->
+
+    <img class="card-img" src="${imgPathLocal}" alt="Weather img" />
+  </div>
+  <div class="card-desc">${condition}</div>
+</div>`;
+  showCard(html);
+}
+
+async function getWeather(city) {
+  const url = `http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  console.log(data);
+  return data;
+}
+
+form.onsubmit = async function (e) {
   e.preventDefault();
   let city = input.value.trim();
 
-  const url = `http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}`;
+  const data = await getWeather(city);
 
-  fetch(url)
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      let html;
-      const prevCard = document.querySelector(".card");
+  clearInput();
+  removeCard();
 
-      if (prevCard) {
-        prevCard.remove();
-      }
+  if (data.error) {
+    showError(data.error.message);
+  } else {
+    // await fetch("./conditions.json");
+    console.log(data.current.condition.code);
 
-      if (!data.error) {
-        console.log(data);
-        console.log(data.location.name);
-        console.log(data.location.country);
-        console.log(data.current.temp_c);
-        console.log(data.current.condition.code);
-        console.log(data.current.condition.text);
-        console.log(data.current.feelslike_c);
-        console.log(data.current.humidity);
-        console.log(data.current.precip_mm);
-        console.log(data.current.wind_mph);
-        console.log(data.current.wind_dir);
-        console.log(data.current.cloud);
-        console.log(data.current.is_day);
+    const imgPath = data.current.condition.icon;
+    console.log(imgPath);
+    const imgPathLocal = imgPath.replace(
+      "//cdn.weatherapi.com/weather/64x64",
+      "./img/weather"
+    );
+    console.log(imgPathLocal);
 
-        const html = `<div class="card">
-      <h2 class="card-city">${data.location.name} <span>${data.location.country}</span></h2>
-      <div class="card-weather">
-        <div class="card-value">${data.current.temp_c}<sup>°c</sup></div>
-        <!--  +11&#8451; -->
+    const info = conditions.find(
+      (obj) => obj.code === data.current.condition.code
+    );
 
-        <img class="card-img" src="./img/example.png" alt="Example img" />
-      </div>
-      <div class="card-desc">${data.current.condition.text}</div>
-    </div>`;
-        header.insertAdjacentHTML("afterend", html);
-      } else {
-        const html = `<div class="card">${data.error.message}</div>`;
-        header.insertAdjacentHTML("afterend", html);
-      }
-      // header.insertAdjacentHTML("afterend", html);
-    });
+    console.log(info.languages[23].day_text);
+
+    // const filePath = data.current.condition.is_day
+    // ? './img/weather/day'
+    // : './img/weather/night';
+
+    const conditionText = data.current.condition.is_day
+      ? info.languages[23].day_text
+      : info.languages[23].night_text;
+
+    const weatherData = {
+      location: data.location.name,
+      country: data.location.country,
+      temp: data.current.temp_c,
+      condition: conditionText,
+      imgPathLocal,
+      // condition: data.current.condition.text,
+    };
+
+    showWeatherCard(weatherData);
+  }
 };
